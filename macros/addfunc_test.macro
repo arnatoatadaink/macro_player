@@ -1,0 +1,14 @@
+# Function assignment
+$t     = GET_TIME
+
+$clip  = CLIPBOARD_GET
+$color = GET_PIXEL_COLOR 500 300
+# $found = IMAGE_MATCH logo.png threshold 0.9
+$win   = WINDOW_EXISTS Notepad
+
+# New Phase 5 commands
+CLIPBOARD_SET some text
+SCREENSHOT screenshots/test.png
+WINDOW_FOCUS Notepad++
+WINDOW_MOVE  Notepad++ 100 100
+WINDOW_RESIZE Notepad++ 800 600

@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "macro-player"
+version = "0.1.0"
+description = "Windows 11 macro recorder and player"
+authors = ["Y"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+PySide6 = "^6.6"
+pynput = "^1.7"
+opencv-python = "^4.9"
+Pillow = "^10.0"
+mss = "^9.0"
+pyperclip = "^1.8"
+pywin32 = "^306"
+
+[tool.poetry.group.dev.dependencies]
+pyinstaller = "^6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+macro-player = "main:main"

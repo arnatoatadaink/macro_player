@@ -1,0 +1,22 @@
+# settings.ini [HOTKEYS] — システム全体で有効
+# record_start = Ctrl+Shift+R
+# record_stop  = Ctrl+Shift+X
+# play         = Ctrl+Shift+P
+
+$test = True
+
+# TRY/CATCH/ENDTRY — エラーハンドリング
+TRY
+    WINDOW_FOCUS "Notepad"
+    TYPE hello
+	PRINT エラーで止まりませんでした
+	$err = 1 / 0
+	PRINT エラー2で止まりませんでした
+	WAIT 10000
+CATCH
+    IF $test
+	    PRINT ウィンドウが見つかりません,IF,True
+	ELSE
+		PRINT ウィンドウが見つかりません
+	ENDIF
+ENDTRY

@@ -1,0 +1,34 @@
+# Basic assignment
+$count = 0
+$count = $count + 1
+
+PRINT $count
+
+$count = $count * $count + 1
+
+PRINT $count
+
+$delay = $count * 100
+
+
+# Use variables as arguments
+LOOP $count
+    TYPE Hello
+ENDLOOP
+
+WAIT $delay
+
+
+
+# Expression conditions
+WHILE $count < 10
+    $count = $count + 1
+ENDWHILE
+
+$rand  = RANDOM 1 100
+
+IF $rand > 50
+    PRINT big number
+ELSE
+    PRINT small number
+ENDIF
