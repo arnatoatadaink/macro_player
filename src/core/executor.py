@@ -28,6 +28,11 @@ from typing import Any
 from pynput import mouse, keyboard
 
 from src.core.keys import parse_key as _parse_key, parse_combo as _parse_combo
+from src.utils.optional_deps import (
+    pyperclip, HAS_PYPERCLIP,
+    mss, HAS_MSS,
+    win32gui, win32con, HAS_WIN32,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -211,22 +216,22 @@ class CommandExecutor:
 
     def _cmd_clipboard_set(self, args: list[str]) -> None:
         """CLIPBOARD_SET text — copy text to the clipboard."""
+        if not HAS_PYPERCLIP:
+            self._log("WARNING", "CLIPBOARD_SET requires pyperclip")
+            return
         text = " ".join(args)
         try:
-            import pyperclip          # type: ignore[import]
             pyperclip.copy(text)
         except Exception as exc:
             self._log("WARNING", f"CLIPBOARD_SET: {exc}")
 
     def _cmd_screenshot(self, args: list[str]) -> None:
         """SCREENSHOT [path] — save a screenshot; default path is screenshots/YYYYMMDD_HHMMSS.png"""
-        import datetime
-        try:
-            import mss        # type: ignore[import]
-            import mss.tools  # type: ignore[import]
-        except ImportError:
+        if not HAS_MSS:
             self._log("WARNING", "SCREENSHOT requires mss")
             return
+        import datetime
+        from pathlib import Path as _Path
 
         if args:
             path = args[0]
@@ -235,7 +240,6 @@ class CommandExecutor:
             path = f"screenshots/{ts}.png"
 
         try:
-            from pathlib import Path as _Path
             _Path(path).parent.mkdir(parents=True, exist_ok=True)
             with mss.mss() as sct:
                 sct.shot(mon=1, output=path)
@@ -245,10 +249,7 @@ class CommandExecutor:
 
     def _cmd_window_focus(self, args: list[str]) -> None:
         """WINDOW_FOCUS "title" — bring window to foreground."""
-        try:
-            import win32gui   # type: ignore[import]
-            import win32con   # type: ignore[import]
-        except ImportError:
+        if not HAS_WIN32:
             self._log("WARNING", "WINDOW_FOCUS requires pywin32")
             return
         title = " ".join(args)
@@ -261,9 +262,7 @@ class CommandExecutor:
 
     def _cmd_window_move(self, args: list[str]) -> None:
         """WINDOW_MOVE "title" x y — move window top-left corner."""
-        try:
-            import win32gui   # type: ignore[import]
-        except ImportError:
+        if not HAS_WIN32:
             self._log("WARNING", "WINDOW_MOVE requires pywin32")
             return
         if len(args) < 3:
@@ -286,9 +285,7 @@ class CommandExecutor:
 
     def _cmd_window_resize(self, args: list[str]) -> None:
         """WINDOW_RESIZE "title" w h — resize window."""
-        try:
-            import win32gui   # type: ignore[import]
-        except ImportError:
+        if not HAS_WIN32:
             self._log("WARNING", "WINDOW_RESIZE requires pywin32")
             return
         if len(args) < 3:
@@ -311,10 +308,7 @@ class CommandExecutor:
 
     def _cmd_window_close(self, args: list[str]) -> None:
         """WINDOW_CLOSE "title" — send WM_CLOSE to a window."""
-        try:
-            import win32gui   # type: ignore[import]
-            import win32con   # type: ignore[import]
-        except ImportError:
+        if not HAS_WIN32:
             self._log("WARNING", "WINDOW_CLOSE requires pywin32")
             return
         title = " ".join(args)

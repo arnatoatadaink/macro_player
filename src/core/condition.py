@@ -28,22 +28,10 @@ from typing import TYPE_CHECKING, Callable
 if TYPE_CHECKING:
     from src.core.variable_store import VariableStore
 
-# ---------------------------------------------------------------------------
-# Optional imports
-# ---------------------------------------------------------------------------
-try:
-    import mss
-    import numpy as np
-    import cv2
-    _HAS_CV = True
-except ImportError:
-    _HAS_CV = False
-
-try:
-    import win32gui
-    _HAS_WIN32 = True
-except ImportError:
-    _HAS_WIN32 = False
+from src.utils.optional_deps import (
+    cv2, np, mss, HAS_CV as _HAS_CV, HAS_MSS as _HAS_MSS,
+    win32gui, HAS_WIN32 as _HAS_WIN32,
+)
 
 
 # ---------------------------------------------------------------------------

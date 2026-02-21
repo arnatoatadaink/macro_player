@@ -30,6 +30,10 @@ from typing import Any, Callable
 
 from src.core.variable_store import VariableStore
 from src.core.prefix import VARIABLE_PREFIX,VARIABLE_REGPREFIX
+from src.utils.optional_deps import (
+    mss, np, HAS_CV, HAS_MSS,
+    pyperclip, HAS_PYPERCLIP,
+)
 
 LogFn = Callable[[str, str], None]
 
@@ -155,8 +159,10 @@ def call_function(
             return 0
 
     if fname == "CLIPBOARD_GET":
+        if not HAS_PYPERCLIP:
+            _log("WARNING", "CLIPBOARD_GET requires pyperclip")
+            return ""
         try:
-            import pyperclip          # type: ignore[import]
             return pyperclip.paste()
         except Exception as exc:
             _log("WARNING", f"CLIPBOARD_GET: {exc}")
@@ -176,10 +182,7 @@ def call_function(
 
 def _get_pixel_color(args: list[str], log: LogFn) -> str:
     """GET_PIXEL_COLOR x y → 'r g b' string."""
-    try:
-        import mss        # type: ignore[import]
-        import numpy as np  # type: ignore[import]
-    except ImportError:
+    if not (HAS_MSS and HAS_CV):
         log("WARNING", "GET_PIXEL_COLOR requires mss and numpy")
         return "0 0 0"
 
