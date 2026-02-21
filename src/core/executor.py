@@ -23,74 +23,11 @@ from __future__ import annotations
 
 import threading
 import time
-from typing import Any, Optional
+from typing import Any
 
 from pynput import mouse, keyboard
 
-# ---------------------------------------------------------------------------
-# Key-name → pynput mapping
-# ---------------------------------------------------------------------------
-
-_SPECIAL_KEYS: dict[str, Any] = {
-    "CTRL":        keyboard.Key.ctrl,
-    "CTRL_L":      keyboard.Key.ctrl_l,
-    "CTRL_R":      keyboard.Key.ctrl_r,
-    "SHIFT":       keyboard.Key.shift,
-    "SHIFT_L":     keyboard.Key.shift_l,
-    "SHIFT_R":     keyboard.Key.shift_r,
-    "ALT":         keyboard.Key.alt,
-    "ALT_L":       keyboard.Key.alt_l,
-    "ALT_R":       keyboard.Key.alt_r,
-    "WIN":         keyboard.Key.cmd,
-    "SUPER":       keyboard.Key.cmd,
-    "ENTER":       keyboard.Key.enter,
-    "RETURN":      keyboard.Key.enter,
-    "SPACE":       keyboard.Key.space,
-    "BACKSPACE":   keyboard.Key.backspace,
-    "TAB":         keyboard.Key.tab,
-    "ESC":         keyboard.Key.esc,
-    "ESCAPE":      keyboard.Key.esc,
-    "DELETE":      keyboard.Key.delete,
-    "DEL":         keyboard.Key.delete,
-    "HOME":        keyboard.Key.home,
-    "END":         keyboard.Key.end,
-    "PAGEUP":      keyboard.Key.page_up,
-    "PAGE_UP":     keyboard.Key.page_up,
-    "PAGEDOWN":    keyboard.Key.page_down,
-    "PAGE_DOWN":   keyboard.Key.page_down,
-    "UP":          keyboard.Key.up,
-    "DOWN":        keyboard.Key.down,
-    "LEFT":        keyboard.Key.left,
-    "RIGHT":       keyboard.Key.right,
-    "INSERT":      keyboard.Key.insert,
-    "CAPSLOCK":    keyboard.Key.caps_lock,
-    "NUMLOCK":     keyboard.Key.num_lock,
-    "SCROLLLOCK":  keyboard.Key.scroll_lock,
-    "PRINTSCREEN": keyboard.Key.print_screen,
-    "PAUSE":       keyboard.Key.pause,
-    **{f"F{n}": getattr(keyboard.Key, f"f{n}") for n in range(1, 13)},
-}
-
-_BUTTON_MAP: dict[str, mouse.Button] = {
-    "LEFT":   mouse.Button.left,
-    "RIGHT":  mouse.Button.right,
-    "MIDDLE": mouse.Button.middle,
-}
-
-
-def _parse_key(name: str) -> Optional[Any]:
-    """Convert a key-name string (as recorded) to a pynput Key or KeyCode."""
-    upper = name.upper()
-    if upper in _SPECIAL_KEYS:
-        return _SPECIAL_KEYS[upper]
-    if len(name) == 1:
-        return keyboard.KeyCode.from_char(name)
-    return None
-
-
-def _parse_combo(combo_str: str) -> list[Any]:
-    """Parse 'ctrl+shift+a' → [Key.ctrl, Key.shift, KeyCode('a')]."""
-    return [k for n in combo_str.split("+") if (k := _parse_key(n.strip())) is not None]
+from src.core.keys import parse_key as _parse_key, parse_combo as _parse_combo
 
 
 # ---------------------------------------------------------------------------
