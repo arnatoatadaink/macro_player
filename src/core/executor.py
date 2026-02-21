@@ -28,11 +28,10 @@ from typing import Any
 from pynput import mouse, keyboard
 
 from src.core.keys import parse_key as _parse_key, parse_combo as _parse_combo
-from src.utils.optional_deps import (
-    pyperclip, HAS_PYPERCLIP,
-    mss, HAS_MSS,
-    win32gui, win32con, HAS_WIN32,
+from src.core.commands.window import (
+    cmd_window_focus, cmd_window_move, cmd_window_resize, cmd_window_close,
 )
+from src.core.commands.clipboard import cmd_clipboard_set, cmd_screenshot
 
 
 # ---------------------------------------------------------------------------
@@ -202,121 +201,12 @@ class CommandExecutor:
         self._sleep(ms)
 
     # ------------------------------------------------------------------
-    # ------------------------------------------------------------------
     # Debug output
     # ------------------------------------------------------------------
 
     def _cmd_print(self, args: list[str]) -> None:
         """PRINT "message" — write to the log panel."""
         self._log("INFO", " ".join(args))
-
-    # ------------------------------------------------------------------
-    # Phase 5: clipboard, screenshot, window management
-    # ------------------------------------------------------------------
-
-    def _cmd_clipboard_set(self, args: list[str]) -> None:
-        """CLIPBOARD_SET text — copy text to the clipboard."""
-        if not HAS_PYPERCLIP:
-            self._log("WARNING", "CLIPBOARD_SET requires pyperclip")
-            return
-        text = " ".join(args)
-        try:
-            pyperclip.copy(text)
-        except Exception as exc:
-            self._log("WARNING", f"CLIPBOARD_SET: {exc}")
-
-    def _cmd_screenshot(self, args: list[str]) -> None:
-        """SCREENSHOT [path] — save a screenshot; default path is screenshots/YYYYMMDD_HHMMSS.png"""
-        if not HAS_MSS:
-            self._log("WARNING", "SCREENSHOT requires mss")
-            return
-        import datetime
-        from pathlib import Path as _Path
-
-        if args:
-            path = args[0]
-        else:
-            ts   = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            path = f"screenshots/{ts}.png"
-
-        try:
-            _Path(path).parent.mkdir(parents=True, exist_ok=True)
-            with mss.mss() as sct:
-                sct.shot(mon=1, output=path)
-            self._log("INFO", f"SCREENSHOT saved: {path}")
-        except Exception as exc:
-            self._log("WARNING", f"SCREENSHOT: {exc}")
-
-    def _cmd_window_focus(self, args: list[str]) -> None:
-        """WINDOW_FOCUS "title" — bring window to foreground."""
-        if not HAS_WIN32:
-            self._log("WARNING", "WINDOW_FOCUS requires pywin32")
-            return
-        title = " ".join(args)
-        hwnd  = win32gui.FindWindow(None, title)
-        if hwnd:
-            win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
-            win32gui.SetForegroundWindow(hwnd)
-        else:
-            self._log("WARNING", f"WINDOW_FOCUS: window not found: {title!r}")
-
-    def _cmd_window_move(self, args: list[str]) -> None:
-        """WINDOW_MOVE "title" x y — move window top-left corner."""
-        if not HAS_WIN32:
-            self._log("WARNING", "WINDOW_MOVE requires pywin32")
-            return
-        if len(args) < 3:
-            self._log("WARNING", "WINDOW_MOVE: usage: WINDOW_MOVE title x y")
-            return
-        title = args[0]
-        try:
-            x, y = int(args[1]), int(args[2])
-        except ValueError:
-            self._log("WARNING", "WINDOW_MOVE: x/y must be integers")
-            return
-        hwnd = win32gui.FindWindow(None, title)
-        if hwnd:
-            rect = win32gui.GetWindowRect(hwnd)
-            w    = rect[2] - rect[0]
-            h    = rect[3] - rect[1]
-            win32gui.MoveWindow(hwnd, x, y, w, h, True)
-        else:
-            self._log("WARNING", f"WINDOW_MOVE: window not found: {title!r}")
-
-    def _cmd_window_resize(self, args: list[str]) -> None:
-        """WINDOW_RESIZE "title" w h — resize window."""
-        if not HAS_WIN32:
-            self._log("WARNING", "WINDOW_RESIZE requires pywin32")
-            return
-        if len(args) < 3:
-            self._log("WARNING", "WINDOW_RESIZE: usage: WINDOW_RESIZE title w h")
-            return
-        title = args[0]
-        try:
-            w, h = int(args[1]), int(args[2])
-        except ValueError:
-            self._log("WARNING", "WINDOW_RESIZE: w/h must be integers")
-            return
-        hwnd = win32gui.FindWindow(None, title)
-        if hwnd:
-            rect = win32gui.GetWindowRect(hwnd)
-            x    = rect[0]
-            y    = rect[1]
-            win32gui.MoveWindow(hwnd, x, y, w, h, True)
-        else:
-            self._log("WARNING", f"WINDOW_RESIZE: window not found: {title!r}")
-
-    def _cmd_window_close(self, args: list[str]) -> None:
-        """WINDOW_CLOSE "title" — send WM_CLOSE to a window."""
-        if not HAS_WIN32:
-            self._log("WARNING", "WINDOW_CLOSE requires pywin32")
-            return
-        title = " ".join(args)
-        hwnd  = win32gui.FindWindow(None, title)
-        if hwnd:
-            win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
-        else:
-            self._log("WARNING", f"WINDOW_CLOSE: window not found: {title!r}")
 
     # ------------------------------------------------------------------
     # No-ops (placeholders for control flow handled by runner)
@@ -375,13 +265,13 @@ _DISPATCH: dict[str, Any] = {
     "PRINT":          CommandExecutor._cmd_print,
     # Mouse position capture (args are variable names — handled by runner)
     "MOUSE_GET_POS":  CommandExecutor._cmd_noop,
-    # Phase 5
-    "CLIPBOARD_SET":  CommandExecutor._cmd_clipboard_set,
-    "SCREENSHOT":     CommandExecutor._cmd_screenshot,
-    "WINDOW_FOCUS":   CommandExecutor._cmd_window_focus,
-    "WINDOW_MOVE":    CommandExecutor._cmd_window_move,
-    "WINDOW_RESIZE":  CommandExecutor._cmd_window_resize,
-    "WINDOW_CLOSE":   CommandExecutor._cmd_window_close,
+    # Phase 5: clipboard, screenshot, window management (from sub-modules)
+    "CLIPBOARD_SET":  cmd_clipboard_set,
+    "SCREENSHOT":     cmd_screenshot,
+    "WINDOW_FOCUS":   cmd_window_focus,
+    "WINDOW_MOVE":    cmd_window_move,
+    "WINDOW_RESIZE":  cmd_window_resize,
+    "WINDOW_CLOSE":   cmd_window_close,
     "FUNCTION":       CommandExecutor._cmd_noop,
     "TRY":            CommandExecutor._cmd_noop,
     "CATCH":          CommandExecutor._cmd_noop,
