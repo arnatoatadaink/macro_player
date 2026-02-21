@@ -29,16 +29,13 @@ from src.core.keys import (
     BUTTON_CMDS as _BUTTON_CMDS,
     key_name as _key_name,
 )
-
-# ---------------------------------------------------------------------------
-# Tunables
-# ---------------------------------------------------------------------------
-
-_CLICK_MAX_MS = 400   # press→release within this → simple CLICK (not DOWN/UP)
-_CLICK_MAX_PX = 5     # pixel drift within this    → simple CLICK
-_MOVE_MIN_PX  = 20    # minimum Euclidean distance  to emit MOUSE_POS
-_MOVE_MIN_MS  = 100   # minimum ms between MOUSE_POS events
-_WAIT_MIN_MS  = 10    # WAITs shorter than this are suppressed
+from src.core.constants import (
+    CLICK_MAX_MS as _CLICK_MAX_MS,
+    CLICK_MAX_PX as _CLICK_MAX_PX,
+    MOVE_MIN_PX as _MOVE_MIN_PX,
+    MOVE_MIN_MS as _MOVE_MIN_MS,
+    WAIT_MIN_MS as _WAIT_MIN_MS,
+)
 
 
 # ---------------------------------------------------------------------------

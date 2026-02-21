@@ -32,6 +32,7 @@ from src.core.commands.window import (
     cmd_window_focus, cmd_window_move, cmd_window_resize, cmd_window_close,
 )
 from src.core.commands.clipboard import cmd_clipboard_set, cmd_screenshot
+from src.core.constants import SLEEP_CHUNK_S
 
 
 # ---------------------------------------------------------------------------
@@ -80,7 +81,7 @@ class CommandExecutor:
         """
         speed  = max(0.01, self._settings.playback_speed)
         target = ms / speed / 1000.0
-        chunk  = 0.05
+        chunk  = SLEEP_CHUNK_S
         elapsed = 0.0
         while elapsed < target:
             if self._stop_event.is_set():
