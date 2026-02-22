@@ -23,88 +23,24 @@ from typing import Optional
 from pynput import mouse, keyboard
 from PySide6.QtCore import QObject, Signal
 
-# ---------------------------------------------------------------------------
-# Key-name tables
-# ---------------------------------------------------------------------------
-
-_MODIFIERS: frozenset = frozenset({
-    keyboard.Key.ctrl,    keyboard.Key.ctrl_l,  keyboard.Key.ctrl_r,
-    keyboard.Key.shift,   keyboard.Key.shift_l, keyboard.Key.shift_r,
-    keyboard.Key.alt,     keyboard.Key.alt_l,   keyboard.Key.alt_r,
-    keyboard.Key.cmd,     keyboard.Key.cmd_l,   keyboard.Key.cmd_r,
-})
-
-_MOD_NAMES: dict = {
-    keyboard.Key.ctrl_l:  "ctrl",  keyboard.Key.ctrl_r:  "ctrl",
-    keyboard.Key.ctrl:    "ctrl",
-    keyboard.Key.shift_l: "shift", keyboard.Key.shift_r: "shift",
-    keyboard.Key.shift:   "shift",
-    keyboard.Key.alt_l:   "alt",   keyboard.Key.alt_r:   "alt",
-    keyboard.Key.alt:     "alt",
-    keyboard.Key.cmd_l:   "win",   keyboard.Key.cmd_r:   "win",
-    keyboard.Key.cmd:     "win",
-}
-
-_KEY_NAMES: dict = {
-    keyboard.Key.space:        "space",
-    keyboard.Key.enter:        "enter",
-    keyboard.Key.backspace:    "backspace",
-    keyboard.Key.tab:          "tab",
-    keyboard.Key.esc:          "esc",
-    # keyboard.Key.escape:       "esc",
-    keyboard.Key.delete:       "delete",
-    keyboard.Key.home:         "home",
-    keyboard.Key.end:          "end",
-    keyboard.Key.page_up:      "pageup",
-    keyboard.Key.page_down:    "pagedown",
-    keyboard.Key.up:           "up",
-    keyboard.Key.down:         "down",
-    keyboard.Key.left:         "left",
-    keyboard.Key.right:        "right",
-    keyboard.Key.insert:       "insert",
-    keyboard.Key.caps_lock:    "capslock",
-    keyboard.Key.num_lock:     "numlock",
-    keyboard.Key.scroll_lock:  "scrolllock",
-    keyboard.Key.print_screen: "printscreen",
-    keyboard.Key.pause:        "pause",
-    keyboard.Key.f1:  "f1",  keyboard.Key.f2:  "f2",  keyboard.Key.f3:  "f3",
-    keyboard.Key.f4:  "f4",  keyboard.Key.f5:  "f5",  keyboard.Key.f6:  "f6",
-    keyboard.Key.f7:  "f7",  keyboard.Key.f8:  "f8",  keyboard.Key.f9:  "f9",
-    keyboard.Key.f10: "f10", keyboard.Key.f11: "f11", keyboard.Key.f12: "f12",
-}
-
-# click_cmd, down_cmd, up_cmd
-_BUTTON_CMDS: dict = {
-    mouse.Button.left:   ("MOUSE_LEFT_CLICK",   "MOUSE_LEFT_DOWN",   "MOUSE_LEFT_UP"),
-    mouse.Button.right:  ("MOUSE_RIGHT_CLICK",  "MOUSE_RIGHT_DOWN",  "MOUSE_RIGHT_UP"),
-    mouse.Button.middle: ("MOUSE_MIDDLE_CLICK", "MOUSE_MIDDLE_DOWN", "MOUSE_MIDDLE_UP"),
-}
-
-# ---------------------------------------------------------------------------
-# Tunables
-# ---------------------------------------------------------------------------
-
-_CLICK_MAX_MS = 400   # press→release within this → simple CLICK (not DOWN/UP)
-_CLICK_MAX_PX = 5     # pixel drift within this    → simple CLICK
-_MOVE_MIN_PX  = 20    # minimum Euclidean distance  to emit MOUSE_POS
-_MOVE_MIN_MS  = 100   # minimum ms between MOUSE_POS events
-_WAIT_MIN_MS  = 10    # WAITs shorter than this are suppressed
+from src.core.keys import (
+    MODIFIERS as _MODIFIERS,
+    MOD_NAMES as _MOD_NAMES,
+    BUTTON_CMDS as _BUTTON_CMDS,
+    key_name as _key_name,
+)
+from src.core.constants import (
+    CLICK_MAX_MS as _CLICK_MAX_MS,
+    CLICK_MAX_PX as _CLICK_MAX_PX,
+    MOVE_MIN_PX as _MOVE_MIN_PX,
+    MOVE_MIN_MS as _MOVE_MIN_MS,
+    WAIT_MIN_MS as _WAIT_MIN_MS,
+)
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _key_name(key) -> Optional[str]:
-    """Return the macro key name for a pynput key, or None if unsupported."""
-    if key in _KEY_NAMES:
-        return _KEY_NAMES[key]
-    if hasattr(key, "char") and key.char:
-        return key.char
-    raw = str(key).replace("Key.", "").replace("'", "")
-    # Unknown virtual key code looks like "<65437>"
-    return None if (not raw or raw.startswith("<")) else raw
-
 
 def _hypot(x1: int, y1: int, x2: int, y2: int) -> float:
     return math.hypot(x2 - x1, y2 - y1)

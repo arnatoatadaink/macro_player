@@ -27,6 +27,10 @@ from src.core.ast_nodes import (
 from src.core.executor import CommandExecutor
 from src.core.variable_store import VariableStore
 from src.core.prefix import VARIABLE_PREFIX
+from src.core.constants import (
+    MAX_ITERATIONS as _MAX_ITERATIONS,
+    MAX_CALL_DEPTH as _MAX_CALL_DEPTH,
+)
 
 LogFn    = Callable[[str, str], None]       # (level, message)
 CondFn   = Callable[[list[str]], bool]      # (condition_tokens) → bool
@@ -40,14 +44,6 @@ class _Break(Exception):    pass
 class _Continue(Exception): pass
 class _Return(Exception):   pass
 class _Exit(Exception):     pass
-
-
-# ---------------------------------------------------------------------------
-# Runner
-# ---------------------------------------------------------------------------
-
-_MAX_ITERATIONS = 100_000   # safety cap on WHILE / REPEAT loops
-_MAX_CALL_DEPTH = 16        # recursive CALL depth limit
 
 
 class ASTRunner:
